@@ -43,11 +43,12 @@ public class SqlStreamsTransactionManager implements PlatformTransactionManager 
             t = sql.transaction();
         } else {
             t = sql.transaction(isolationLevel);
-
-            if (definition.isReadOnly()) {
-                Wrap.execute(() -> t.getConnection().setReadOnly(true));
-            }
         }
+
+        if (definition.isReadOnly()) {
+            Wrap.execute(() -> t.getConnection().setReadOnly(true));
+        }
+
         return new SqlStreamTransactionStatus(t);
     }
 
