@@ -8,21 +8,16 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 public class SqlStreamsTransactionManager implements PlatformTransactionManager {
 
-    private static final Map<Integer, Transaction.IsolationLevel> ISOLATION_LEVEL_MAP;
-    static {
-        Map<Integer, Transaction.IsolationLevel> map = new HashMap<>();
-        map.put(TransactionDefinition.ISOLATION_READ_COMMITTED, Transaction.IsolationLevel.READ_COMMITTED);
-        map.put(TransactionDefinition.ISOLATION_READ_UNCOMMITTED, Transaction.IsolationLevel.READ_UNCOMMITTED);
-        map.put(TransactionDefinition.ISOLATION_REPEATABLE_READ, Transaction.IsolationLevel.REPEATABLE_READ);
-        map.put(TransactionDefinition.ISOLATION_SERIALIZABLE, Transaction.IsolationLevel.SERIALIZABLE);
-
-        ISOLATION_LEVEL_MAP = Collections.unmodifiableMap(map);
+    private static Transaction.IsolationLevel translateIsolationLevel(int isolationLevel) {
+        switch (isolationLevel) {
+            case TransactionDefinition.ISOLATION_READ_COMMITTED: return Transaction.IsolationLevel.READ_COMMITTED;
+            case TransactionDefinition.ISOLATION_READ_UNCOMMITTED: return Transaction.IsolationLevel.READ_UNCOMMITTED;
+            case TransactionDefinition.ISOLATION_REPEATABLE_READ: return Transaction.IsolationLevel.REPEATABLE_READ;
+            case TransactionDefinition.ISOLATION_SERIALIZABLE: return Transaction.IsolationLevel.SERIALIZABLE;
+        }
+        throw new IllegalArgumentException("invalid transaction isolation: " + isolationLevel);
     }
 
     private final Sql sql;
@@ -37,7 +32,7 @@ public class SqlStreamsTransactionManager implements PlatformTransactionManager 
 
     @Override
     public TransactionStatus getTransaction(TransactionDefinition definition) throws TransactionException {
-        Transaction.IsolationLevel isolationLevel = ISOLATION_LEVEL_MAP.get(definition.getIsolationLevel());
+        Transaction.IsolationLevel isolationLevel = translateIsolationLevel(definition.getIsolationLevel());
         Transaction t;
         if (isolationLevel == null) {
             t = sql.transaction();
