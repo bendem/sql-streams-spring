@@ -1,7 +1,6 @@
 package be.bendem.sqlstreams.spring;
 
 import be.bendem.sqlstreams.Transaction;
-import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.TransactionSystemException;
@@ -9,12 +8,15 @@ import org.springframework.transaction.TransactionSystemException;
 import java.sql.SQLException;
 import java.sql.Savepoint;
 
-@RequiredArgsConstructor
 public class SqlStreamTransactionStatus implements TransactionStatus {
 
     final Transaction transaction;
     private boolean rollbackOnly = false;
     private boolean closed = false;
+
+    public SqlStreamTransactionStatus(Transaction transaction) {
+        this.transaction = transaction;
+    }
 
     @Override
     public boolean isNewTransaction() {
